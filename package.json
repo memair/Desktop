@@ -1,0 +1,29 @@
+{
+  "name": "memair",
+  "version": "0.0.1",
+  "description": "Memair Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/memair/Desktop.git"
+  },
+  "keywords": [
+    "Quantified Self",
+    "Lifelogging",
+    "Data"
+  ],
+  "author": "Greg Clarke",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/memair/Desktop/issues"
+  },
+  "homepage": "https://github.com/memair/Desktop#readme",
+  "devDependencies": {
+    "electron": "^3.0.5",
+    "electron-packager": "^12.2.0"
+  }
+}

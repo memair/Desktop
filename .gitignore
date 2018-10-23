@@ -59,3 +59,9 @@ typings/
 
 # next.js build output
 .next
+
+# Silly Macs
+*.DS_Store
+
+# Scratch
+scratch.*
