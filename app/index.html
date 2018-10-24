@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <title>Memair</title>
+    <style>
+      /* layout.css Style */
+      .upload-drop-zone {
+        height: 200px;
+        border-width: 2px;
+        margin-bottom: 20px;
+      }
+
+      /* skin.css Style*/
+      .upload-drop-zone {
+        color: #ccc;
+        border-style: dashed;
+        border-color: #ccc;
+        line-height: 200px;
+        text-align: center
+      }
+      .upload-drop-zone.drop {
+        color: #222;
+        border-color: #222;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel panel-default">
+        <div class="panel-heading"><strong>Upload Files</strong> <small>Bootstrap files upload</small></div>
+        <div class="panel-body">
+
+          <!-- Drop Zone -->
+          <h4>Drag and drop zipped archives below</h4>
+          <div class="upload-drop-zone" id="drop-zone">
+            Drag and drop zipped archives from Google, Facebook, & Twitter here
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+              <span class="sr-only">0% Complete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var sqlite3 = require('sqlite3');
+      var db = new sqlite3.Database('db/memair.db');
+    </script>
+
+    <script>
+      var AdmZip = require('adm-zip');
+      var zipFile;
+      var zipEntries;
+
+      (function () {
+          var holder = document.getElementById('drop-zone');
+
+          holder.ondragover = holder.ondragleave = holder.ondragend = () => {
+              return false;
+          };
+
+          holder.ondrop = (e) => {
+              e.preventDefault();
+
+              var firstFile = e.dataTransfer.files[0];
+
+              if(!firstFile){
+                  console.log("No file given");
+                  return;
+              }
+
+              zipFile = new AdmZip(firstFile.path)
+              zipEntries = zipFile.getEntries();
+
+              zipEntries.forEach(function(zipEntry) {
+                  console.log(zipEntry.toString()); // outputs zip entries information
+                  if (zipEntry.entryName == "my_file.txt") {
+                       console.log(zipEntry.getData().toString('utf8'));
+                  }
+              });
+
+              return false;
+          };
+      })();
+    </script>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

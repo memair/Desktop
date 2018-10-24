@@ -23,7 +23,18 @@
   },
   "homepage": "https://github.com/memair/Desktop#readme",
   "devDependencies": {
+    "electron-packager": "^12.2.0",
+    "electron-rebuild": "^1.8.2"
+  },
+  "dependencies": {
+    "adm-zip": "^0.4.11",
+    "bootstrap": "^4.1.3",
     "electron": "^3.0.5",
-    "electron-packager": "^12.2.0"
+    "electron-sqlite3": "0.0.3",
+    "jquery": "^3.3.1",
+    "popper": "^1.0.1",
+    "popper.js": "^1.14.4",
+    "sqlite3": "^4.0.3",
+    "tether": "^1.4.5"
   }
 }
