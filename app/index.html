@@ -3,8 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Greg Clarke">
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <title>Memair</title>
     <style>
@@ -14,7 +13,6 @@
         border-width: 2px;
         margin-bottom: 20px;
       }
-
       /* skin.css Style*/
       .upload-drop-zone {
         color: #ccc;
@@ -27,39 +25,42 @@
         color: #222;
         border-color: #222;
       }
+      .progress-striped.active .progress-bar {
+        -webkit-animation: progress-bar-stripes 2s linear infinite !important;
+        -o-animation: progress-bar-stripes 2s linear infinite !important;
+        animation: progress-bar-stripes 2s linear infinite !important;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="panel panel-default">
-        <div class="panel-heading"><strong>Upload Files</strong> <small>Bootstrap files upload</small></div>
-        <div class="panel-body">
+      <div class="jumbotron text-center">
+        <h1>Memair Data Explorer</h1>
 
-          <!-- Drop Zone -->
-          <h4>Drag and drop zipped archives below</h4>
-          <div class="upload-drop-zone" id="drop-zone">
-            Drag and drop zipped archives from Google, Facebook, & Twitter here
-          </div>
+        <h4>Import archives from Google, Facebook, & Twitter</h4>
+        <div class="upload-drop-zone" id="drop-zone">
+          Drag and drop zipped archives here
+        </div>
 
-          <!-- Progress Bar -->
-          <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
-              <span class="sr-only">0% Complete</span>
-            </div>
+        <div class="progress" style="height: 25px;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%">
+
           </div>
         </div>
+
       </div>
     </div>
+    <script src="renderer.js"></script>
+
+    <script src="db.js"></script>
 
     <script>
-      var sqlite3 = require('sqlite3');
-      var db = new sqlite3.Database('db/memair.db');
-    </script>
-
-    <script>
-      var AdmZip = require('adm-zip');
-      var zipFile;
-      var zipEntries;
+    function update_progress(percent_done, message) {
+      $('.progress-bar').css('width', percent_done+'%').html(percent_done.toFixed(1) + '% ' + message + '...');
+      return false
+    }
+      var DecompressZip = require('decompress-zip');
+      var unzipper;
 
       (function () {
           var holder = document.getElementById('drop-zone');
@@ -69,30 +70,58 @@
           };
 
           holder.ondrop = (e) => {
-              e.preventDefault();
+            e.preventDefault();
 
-              var firstFile = e.dataTransfer.files[0];
+            var firstFile = e.dataTransfer.files[0];
 
-              if(!firstFile){
-                  console.log("No file given");
-                  return;
-              }
+            if(!firstFile){
+              console.log("No file given");
+              return;
+            }
 
-              zipFile = new AdmZip(firstFile.path)
-              zipEntries = zipFile.getEntries();
+            unzipper = new DecompressZip(firstFile.path)
 
-              zipEntries.forEach(function(zipEntry) {
-                  console.log(zipEntry.toString()); // outputs zip entries information
-                  if (zipEntry.entryName == "my_file.txt") {
-                       console.log(zipEntry.getData().toString('utf8'));
-                  }
+            unzipper.on('error', function (err) {
+              console.log('Caught an error');
+            });
+
+            unzipper.on('extract', function (log) {
+              console.log('Finished extracting');
+              update_progress(10, 'investigating files')
+              const readStream = fs.createReadStream(google_location_history);
+              const parseStream = json.createParseStream();
+              build_locations_table();
+              parseStream.on('data', function(pojo) {
+                var db = new sqlite3.Database(db_location);
+                console.log('starting batch import');
+                require('foreach-batch')
+                forEachBatch(pojo['locations'], function(raw_location) {
+                  addLocation(db, raw_location)
+                }, 5000, function(progress) {
+                  var percent_done = (progress * 90) + 10
+                  update_progress(percent_done, 'inserting locations')
+                  console.log('inserting locations ' + percent_done);
+                }, 1000)
               });
+              readStream.pipe(parseStream);
+            });
 
-              return false;
+            unzipper.on('progress', function (fileIndex, fileCount) {
+              var percent_done = (fileIndex / fileCount) * 9
+              update_progress(percent_done, 'extracting files')
+              console.log('Extracted file ' + (fileIndex + 1) + ' of ' + fileCount);
+            });
+
+            unzipper.extract({
+                path: 'tmp',
+                filter: function (file) {
+                    return file.type !== "SymbolicLink";
+                }
+            });
+
+            return false;
           };
       })();
     </script>
-
-    <script src="renderer.js"></script>
   </body>
 </html>

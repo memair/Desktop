@@ -1,5 +1,4 @@
 const { app, BrowserWindow, Menu } = require('electron')
-const sqlite3 = require('sqlite3')
 var path = require('path')
 
 function createWindow () {
