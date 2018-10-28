@@ -10,4 +10,4 @@ Build package
 
 - Mac Example
 
-`electron-packager ./ Memair --platform=darwin --arch=x64 --icon=Desktop/assets/icons/mac/memair.icns --overwrite`
+`electron-packager ./ Memair --platform=darwin --arch=x64 --icon=assets/icons/mac/memair.icns --overwrite`
